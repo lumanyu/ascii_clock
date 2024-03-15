@@ -11,12 +11,13 @@ import datetime
 from asciicanvas import AsciiCanvas
 
 
-x_scale_ratio = 1.75
+x_scale_ratio = 1.75 #x轴调整系数,以y为基础长度，x=y乘以这个系数
 
 
 def draw_second_hand(ascii_canvas, seconds, length, fill_char):
     """
     Draw second hand
+    画秒针
     """
     x0 = int(math.ceil(ascii_canvas.cols / 2.0))
     y0 = int(math.ceil(ascii_canvas.lines / 2.0))
@@ -28,6 +29,7 @@ def draw_second_hand(ascii_canvas, seconds, length, fill_char):
 def draw_minute_hand(ascii_canvas, minutes, length, fill_char):
     """
     Draw minute hand
+    画分针
     """
     x0 = int(math.ceil(ascii_canvas.cols / 2.0))
     y0 = int(math.ceil(ascii_canvas.lines / 2.0))
@@ -39,6 +41,7 @@ def draw_minute_hand(ascii_canvas, minutes, length, fill_char):
 def draw_hour_hand(ascii_canvas, hours, minutes, length, fill_char):
     """
     Draw hour hand
+    画小时针
     """
     x0 = int(math.ceil(ascii_canvas.cols / 2.0))
     y0 = int(math.ceil(ascii_canvas.lines / 2.0))
@@ -51,20 +54,21 @@ def draw_hour_hand(ascii_canvas, hours, minutes, length, fill_char):
 def draw_clock_face(ascii_canvas, radius, mark_char):
     """
     Draw clock face with hour and minute marks
+    画表盘，表盘上添加小时和分钟 数字形式
     """
-    x0 = ascii_canvas.cols // 2
+    x0 = ascii_canvas.cols // 2  #带四舍五入的除法，比如说10//3在python3中等于3，相当于int
     y0 = ascii_canvas.lines // 2
     # draw marks first
-    for mark in range(1, 12 * 5 + 1):
+    for mark in range(1, 12 * 5 + 1): #总共有60分钟,就是外面60个、刻度
         x1 = x0 + int(math.cos((mark + 45) * 6 * math.pi / 180) * radius * x_scale_ratio)
         y1 = y0 + int(math.sin((mark + 45) * 6 * math.pi / 180) * radius)
-        if mark % 5 != 0:
+        if mark % 5 != 0: #画刻度、
             ascii_canvas.add_text(x1, y1, mark_char)
     # start from 1 because at 0 index - 12 hour
-    for mark in range(1, 12 + 1):
+    for mark in range(1, 12 + 1): # 画小时数，圆周围的12个小时数
         x1 = x0 + int(math.cos((mark + 45) * 30 * math.pi / 180) * radius * x_scale_ratio)
         y1 = y0 + int(math.sin((mark + 45) * 30 * math.pi / 180) * radius)
-        ascii_canvas.add_text(x1, y1, '%s' % mark)
+        ascii_canvas.add_text(x1, y1, '%s' % mark) #画小时数
 
 
 def draw_clock(cols, lines):
@@ -76,9 +80,9 @@ def draw_clock(cols, lines):
         exit()
     # prepare chars
     single_line_border_chars = ('.', '-', '.', '|', ' ', '|', '`', '-', "'")
-    second_hand_char = '.'
-    minute_hand_char = 'o'
-    hour_hand_char = 'O'
+    second_hand_char = '.' #秒针像素点
+    minute_hand_char = 'o' #分针像素点
+    hour_hand_char = 'O' #小时针像素点
     mark_char = '`'
     if os.name == 'nt':
         single_line_border_chars = ('.', '-', '.', '|', ' ', '|', '`', '-', "'")  # ('\xDA', '\xC4', '\xBF', '\xB3', '\x20', '\xB3', '\xC0', '\xC4', '\xD9')
@@ -87,30 +91,30 @@ def draw_clock(cols, lines):
         hour_hand_char = 'O'  # 'o'
         mark_char = '`'  # '\xF9'
     # create ascii canvas for clock and eval vars
-    ascii_canvas = AsciiCanvas(cols, lines)
+    ascii_canvas = AsciiCanvas(cols, lines)  #创建大表盘
     center_x = int(math.ceil(cols / 2.0))
     center_y = int(math.ceil(lines / 2.0))
-    radius = center_y - 5
-    second_hand_length = int(radius / 1.17)
-    minute_hand_length = int(radius / 1.25)
-    hour_hand_length = int(radius / 1.95)
+    radius = center_y - 5 #表盘半径
+    second_hand_length = int(radius / 1.17) #秒针长度
+    minute_hand_length = int(radius / 1.25) #分针长度
+    hour_hand_length = int(radius / 1.95) #小时针长度
     # add clock region and clock face
-    ascii_canvas.add_rect(5, 3, int(math.floor(cols / 2.0)) * 2 - 9, int(math.floor(lines / 2.0)) * 2 - 5)
-    draw_clock_face(ascii_canvas, radius, mark_char)
+    ascii_canvas.add_rect(5, 3, int(math.floor(cols / 2.0)) * 2 - 9, int(math.floor(lines / 2.0)) * 2 - 5) #添加外围方框
+    draw_clock_face(ascii_canvas, radius, mark_char) #画表盘
     now = datetime.datetime.now()
     # add regions with weekday and day if possible
-    if center_x > 25:
+    if center_x > 25: #如果有绘图空间，添加周数和天数
         left_pos = int(radius * x_scale_ratio) / 2 - 4
-        ascii_canvas.add_nine_patch_rect(int(center_x + left_pos), int(center_y - 1), 5, 3, single_line_border_chars)
-        ascii_canvas.add_text(int(center_x + left_pos + 1), int(center_y), now.strftime('%a'))
+        ascii_canvas.add_nine_patch_rect(int(center_x + left_pos), int(center_y - 1), 5, 3, single_line_border_chars) #添加小方框
+        ascii_canvas.add_text(int(center_x + left_pos + 1), int(center_y), now.strftime('%a'))  #添加周数
         ascii_canvas.add_nine_patch_rect(int(center_x + left_pos + 5), int(center_y - 1), 4, 3, single_line_border_chars)
-        ascii_canvas.add_text(int(center_x + left_pos + 1 + 5), int(center_y), now.strftime('%d'))
+        ascii_canvas.add_text(int(center_x + left_pos + 1 + 5), int(center_y), now.strftime('%d')) #添加天数
     # add clock hands
-    draw_second_hand(ascii_canvas, now.second, second_hand_length, fill_char=second_hand_char)
-    draw_minute_hand(ascii_canvas, now.minute, minute_hand_length, fill_char=minute_hand_char)
-    draw_hour_hand(ascii_canvas, now.hour, now.minute, hour_hand_length, fill_char=hour_hand_char)
+    draw_second_hand(ascii_canvas, now.second, second_hand_length, fill_char=second_hand_char) #添加秒针
+    draw_minute_hand(ascii_canvas, now.minute, minute_hand_length, fill_char=minute_hand_char) #添加分针
+    draw_hour_hand(ascii_canvas, now.hour, now.minute, hour_hand_length, fill_char=hour_hand_char) #添加小时针
     # print out canvas
-    ascii_canvas.print_out()
+    ascii_canvas.print_out() #打印到荧幕
 
 
 def main():
@@ -120,9 +124,9 @@ def main():
     if os.name == 'nt':
         os.system('mode con: cols=%s lines=%s' % (cols + 1, lines + 1))
     while True:
-       os.system('cls' if os.name == 'nt' else 'clear')
-       draw_clock(cols, lines)
-       time.sleep(0.2)
+       os.system('cls' if os.name == 'nt' else 'clear') #清屏
+       draw_clock(cols, lines) #画时钟
+       time.sleep(0.2) #每0.2秒进行刷新，如果觉得屏幕太闪，把这个数调大点
 
 
 if __name__ == '__main__':
